@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>풀스택 반복 연습</title>
+</head>
+
+<body>
+    <h2>🚀 풀스택 연결 테스트</h2>
+
+    <input type="text" id="uid" placeholder="아이디 (예: user1)">
+    <input type="text" id="name" placeholder="이름">
+    <input type="text" id="job" placeholder="직업">
+    <button onclick="saveUser()">저장 (Create)</button>
+
+    <hr>
+
+    <button onclick="readUser()">내 정보 불러오기 (Read)</button>
+    <div id="result">결과가 여기에 나옵니다.</div>
+
+    <script>
+        // ★ 아까 복사한 URL을 여기에 붙여넣으세요!
+        const CREATE_URL = "https://YOUR_PROJECT_URL/createUser";
+        const READ_URL = "https://YOUR_PROJECT_URL/getUser";
+
+        async function saveUser() {
+            const uid = document.getElementById("uid").value;
+            const name = document.getElementById("name").value;
+            const job = document.getElementById("job").value;
+
+            const res = await fetch(CREATE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ uid, name, job })
+            });
+            const data = await res.json();
+            alert(data.message);
+        }
+
+        async function readUser() {
+            const uid = document.getElementById("uid").value;
+            // GET 방식은 주소 뒤에 데이터를 붙여서 보냅니다 (?uid=...)
+            const res = await fetch(`${READ_URL}?uid=${uid}`);
+            const data = await res.json();
+
+            document.getElementById("result").innerText =
+                JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+
+</html>
