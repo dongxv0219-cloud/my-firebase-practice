@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Project 2: 전자 명함</title>
+    <style>
+        body {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: sans-serif;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            cursor: pointer;
+            color: white;
+            border: none;
+        }
+
+        .btn-create {
+            background: #2196F3;
+        }
+
+        .btn-read {
+            background: #FF9800;
+        }
+
+        .btn-update {
+            background: #4CAF50;
+        }
+
+        #card-display {
+            border: 2px solid #333;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🪪 전자 명함 관리</h1>
+
+    <h3>Step 1. 아이디 정하기</h3>
+    <input type="text" id="uid" placeholder="영문 아이디 (예: dongwook)">
+
+    <hr>
+
+    <h3>Step 2. 정보 입력</h3>
+    <input type="text" id="name" placeholder="이름">
+    <input type="text" id="phone" placeholder="전화번호">
+    <input type="text" id="job" placeholder="직업 (예: 개발자)">
+
+    <button class="btn-create" onclick="createCard()">명함 만들기 (Create)</button>
+    <button class="btn-read" onclick="loadCard()">내 명함 불러오기 (Read)</button>
+    <button class="btn-update" onclick="updateCard()">직업 수정하기 (Update)</button>
+
+    <div id="card-display">
+        <h2 id="view-name">이름</h2>
+        <p id="view-job">직업</p>
+        <p id="view-phone">전화번호</p>
+    </div>
+
+    <script>
+        // ★ 배포한 URL 3개를 여기에 각각 붙여넣으세요!
+        const CREATE_URL = "https://createcard-6w3xpgj7hq-uc.a.run.app";
+        const READ_URL = "https://getcard-6w3xpgj7hq-uc.a.run.app";
+        const UPDATE_URL = "https://updatecard-6w3xpgj7hq-uc.a.run.app";
+
+        // 1. 명함 만들기
+        async function createCard() {
+            const uid = document.getElementById("uid").value;
+            const name = document.getElementById("name").value;
+            const phone = document.getElementById("phone").value;
+            const job = document.getElementById("job").value;
+
+            if (!uid) return alert("아이디는 필수입니다!");
+
+            const res = await fetch(CREATE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ uid, name, phone, job })
+            });
+            const data = await res.json();
+            alert(data.message);
+        }
+
+        // 2. 명함 불러오기
+        async function loadCard() {
+            const uid = document.getElementById("uid").value;
+            if (!uid) return alert("검색할 아이디를 입력하세요!");
+
+            // GET 방식은 주소 뒤에 데이터를 붙입니다 (?uid=...)
+            const res = await fetch(`${READ_URL}?uid=${uid}`);
+
+            if (res.status === 404) return alert("명함이 없습니다!");
+
+            const data = await res.json();
+
+            // 화면에 보여주기
+            document.getElementById("card-display").style.display = "block";
+            document.getElementById("view-name").innerText = data.name;
+            document.getElementById("view-job").innerText = data.job;
+            document.getElementById("view-phone").innerText = data.phone;
+        }
+
+        // 3. 직업 수정하기
+        async function updateCard() {
+            const uid = document.getElementById("uid").value;
+            const job = document.getElementById("job").value; // 바꿀 직업
+
+            const res = await fetch(UPDATE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ uid, job }) // 아이디와 바꿀 내용만 보냄
+            });
+            const data = await res.json();
+            alert(data.message);
+
+            loadCard(); // 수정된 내용 다시 불러오기
+        }
+    </script>
+</body>
+
+</html>

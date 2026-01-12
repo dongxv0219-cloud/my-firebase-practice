@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Project 3: 장바구니</title>
+    <style>
+        body {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: sans-serif;
+        }
+
+        .input-group {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #cceeff;
+        }
+
+        input {
+            padding: 8px;
+            margin-right: 5px;
+            width: 120px;
+        }
+
+        button {
+            padding: 8px 15px;
+            cursor: pointer;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .price {
+            color: #e91e63;
+            font-weight: bold;
+        }
+
+        .del-btn {
+            background: #ff5252;
+            font-size: 12px;
+            padding: 5px 10px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🛒 쇼핑몰 장바구니</h1>
+
+    <div class="input-group">
+        <input type="text" id="name" placeholder="상품명 (예: 우유)">
+        <input type="number" id="price" placeholder="가격 (예: 2500)">
+        <button onclick="addItem()">담기</button>
+    </div>
+
+    <hr>
+
+    <h3>📦 담은 목록 (싼 순서대로) <button onclick="loadCart()" style="background:#555; font-size:12px;">새로고침</button></h3>
+    <div id="cart-list">로딩 중...</div>
+
+    <script>
+        // ★ 배포한 URL 3개를 여기에 각각 붙여넣으세요!
+        const ADD_URL = "https://us-central1-fullstack-master-81edc.cloudfunctions.net/addToCart";
+        const LIST_URL = "https://us-central1-fullstack-master-81edc.cloudfunctions.net/getCartItems";
+        const DELETE_URL = "https://us-central1-fullstack-master-81edc.cloudfunctions.net/deleteItem";
+
+        // 1. 장바구니 담기
+        async function addItem() {
+            const name = document.getElementById("name").value;
+            const price = document.getElementById("price").value;
+
+            if (!name || !price) return alert("상품명과 가격을 입력하세요!");
+
+            const res = await fetch(ADD_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, price })
+            });
+
+            const data = await res.json();
+            alert(data.message);
+
+            // 입력창 비우고 목록 갱신
+            document.getElementById("name").value = "";
+            document.getElementById("price").value = "";
+            loadCart();
+        }
+
+        // 2. 목록 불러오기 (자동 정렬됨)
+        async function loadCart() {
+            const listDiv = document.getElementById("cart-list");
+            listDiv.innerHTML = "계산 중...";
+
+            const res = await fetch(LIST_URL);
+            const items = await res.json();
+
+            listDiv.innerHTML = "";
+            items.forEach(item => {
+                listDiv.innerHTML += `
+                    <div class="item-row">
+                        <span>
+                            <strong>${item.name}</strong>
+                            <span class="price">${item.price}원</span>
+                        </span>
+                        <button class="del-btn" onclick="deleteItem('${item.id}')">빼기</button>
+                    </div>
+                `;
+            });
+        }
+
+        // 3. 물건 빼기 (삭제)
+        async function deleteItem(docId) {
+            if (!confirm("정말 뺄까요?")) return;
+
+            const res = await fetch(DELETE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ docId })
+            });
+
+            const data = await res.json();
+            alert(data.message);
+            loadCart(); // 목록 갱신
+        }
+
+        // 시작 시 로딩
+        loadCart();
+    </script>
+</body>
+
+</html>

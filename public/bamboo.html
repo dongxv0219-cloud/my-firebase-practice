@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Project 1: 대나무 숲</title>
+    <style>
+        body {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: sans-serif;
+        }
+
+        .input-box {
+            border: 2px solid #4CAF50;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f9fff9;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .post-card {
+            background: #eee;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .date {
+            color: #888;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎋 익명 대나무 숲</h1>
+
+    <div class="input-box">
+        <input type="text" id="title" placeholder="제목 (예: 임금님 귀는 당나귀 귀)">
+        <textarea id="content" rows="3" placeholder="하고 싶은 말을 쓰세요..."></textarea>
+        <button onclick="savePost()">소리치기 (저장)</button>
+    </div>
+
+    <hr>
+
+    <h3>📢 메아리 목록</h3>
+    <div id="list">로딩 중...</div>
+
+    <script>
+        // ★ 배포한 URL을 여기에 붙여넣으세요!
+        const CREATE_URL = "https://createpost-6w3xpgj7hq-uc.a.run.app";
+        const LIST_URL = "https://getpostlist-6w3xpgj7hq-uc.a.run.app";
+
+        // 1. 글 저장 (Create)
+        async function savePost() {
+            const title = document.getElementById("title").value;
+            const content = document.getElementById("content").value;
+
+            if (!title || !content) return alert("빈카은 안돼요!");
+
+            const res = await fetch(CREATE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, content })
+            });
+
+            const data = await res.json();
+            alert(data.message);
+
+            // 입력창 비우고 목록 새로고침
+            document.getElementById("title").value = "";
+            document.getElementById("content").value = "";
+            loadList();
+        }
+
+        // 2. 목록 불러오기 (Read)
+        async function loadList() {
+            const listDiv = document.getElementById("list");
+            listDiv.innerHTML = "불러오는 중...";
+
+            const res = await fetch(LIST_URL);
+            const posts = await res.json();
+
+            listDiv.innerHTML = ""; // 초기화
+            posts.forEach(post => {
+                listDiv.innerHTML += `
+                    <div class="post-card">
+                        <h3>${post.title}</h3>
+                        <p>${post.content}</p>
+                        <span class="date">${post.createdAt}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // 시작하자마자 목록 로딩
+        loadList();
+    </script>
+</body>
+
+</html>
